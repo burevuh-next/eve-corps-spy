@@ -1,83 +1,49 @@
-import React, {useState} from "react";
-import {useNavigate} from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
+const LoginPage: React.FC = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-const RegisterPage:React.FC = () => {
-  console.log('RegisterPage rendered');
+        if (!email || !password) {
+            setError('Все поля должны быть заполнены');
+            return;
+        }
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate();
+        setError('');
 
-const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-    // Валидация
-    if (!email || !password || !confirmPassword) {
-        setError('Все поля должны быть заполнены');
-        return;
-    }
-    if (password.length < 6) {
-        setError('Пароль должен быть больше 6 символов');
-        return;
-    }
-    if (password !== confirmPassword) {
-        setError('Пароли не совпадают');
-        return;
-    }
-
-    setError('');
-
-    try {
-        console.log('Sending request to /api/auth/register');
-
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers.get('content-type'));
-
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const data = await response.json(); // ЧИТАЕМ ОДИН РАЗ
-            console.log('Server response:', response.status, data);
+            const data = await response.json();
 
             if (response.ok) {
-                // Успех — сохраняем токен и данные
+                // Сохраняем токен в localStorage
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify({
                     id: data.id,
                     email: data.email
                 }));
-                navigate('/choose-corporation');
+                
+                navigate('/dashboard');
             } else {
-                // Ошибка от сервера
-                let errorMessage = 'Регистрация провалена';
-                if (typeof data === 'string') {
-                    errorMessage = data;
-                } else if (data.message) {
-                    errorMessage = data.message;
-                }
-                setError(errorMessage);
+                setError(data.message || 'Ошибка входа');
             }
-        } else {
-            const text = await response.text();
-            console.error('Текст ответа:', text);
-            setError(text || `Ошибка сервера: ${response.status}`);
+        } catch (err) {
+            setError('Ошибка связи, повторите позже');
         }
-    } catch (err) {
-        console.error('Ошибка связи:', err);
-        setError('Ошибка связи, повторите позже');
-    }
-};
+    };
 
-  return (
+    return (
         <div style={{
             background: '#0A0A0A',
             color: '#00FF9D',
@@ -102,7 +68,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     WebkitTextFillColor: 'transparent',
                     marginBottom: '20px',
                 }}>
-                    &gt; РЕГИСТРАЦИЯ
+                    &gt; ВХОД
                 </h1>
 
                 {error && (
@@ -130,30 +96,12 @@ const handleSubmit = async (e: React.FormEvent) => {
                         />
                     </div>
 
-                    <div style={{ marginBottom: '15px' }}>
+                    <div style={{ marginBottom: '20px' }}>
                         <label style={{ color: '#4A4A4A' }}>Пароль</label>
                         <input
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{
-                                width: '100%',
-                                background: '#0A0A0A',
-                                border: '1px solid #2A2A2A',
-                                color: '#00FF9D',
-                                padding: '8px',
-                                fontFamily: 'inherit',
-                                marginTop: '5px',
-                            }}
-                        />
-                    </div>
-
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ color: '#4A4A4A' }}>Подтвердите пароль</label>
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
                             style={{
                                 width: '100%',
                                 background: '#0A0A0A',
@@ -182,14 +130,14 @@ const handleSubmit = async (e: React.FormEvent) => {
                         onMouseOver={(e) => (e.currentTarget.style.background = '#00CCFF')}
                         onMouseOut={(e) => (e.currentTarget.style.background = '#00FF9D')}
                     >
-                        [ ЗАРЕГИСТРИРОВАТЬСЯ ]
+                        [ ВОЙТИ ]
                     </button>
                 </form>
 
                 <div style={{ marginTop: '15px', textAlign: 'center' }}>
-                    <span style={{ color: '#4A4A4A' }}>Уже есть аккаунт? </span>
-                    <a href="/login" style={{ color: '#00CCFF', textDecoration: 'none' }}>
-                        Вход
+                    <span style={{ color: '#4A4A4A' }}>Нет аккаунта? </span>
+                    <a href="/register" style={{ color: '#00CCFF', textDecoration: 'none' }}>
+                        Регистрация
                     </a>
                 </div>
             </div>
@@ -197,5 +145,4 @@ const handleSubmit = async (e: React.FormEvent) => {
     );
 };
 
-
-export default RegisterPage;
+export default LoginPage;
