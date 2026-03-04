@@ -1,25 +1,51 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Временный список корпораций
-const CORPORATIONS = [
-    "Titan Industries",
-    "Nebula Dynamics",
-    "Quantum Core",
-    "Aegis Security",
-    "Crimson Legion",
-    "Stellar Mining Corp",
-    "Icarus Technologies"
-];
+interface Corporation {
+    id: number;           // eveCorporationId
+    name: string;
+    ticker?: string;
+    memberCount?: number;
+}
 
 const ChooseCorporationPage: React.FC = () => {
     const [name, setName] = useState('');
-    const [corporation, setCorporation] = useState(CORPORATIONS[0]);
+    const [corporations, setCorporations] = useState<Corporation[]>([]);
+    const [selectedCorpId, setSelectedCorpId] = useState<number | null>(null);
     const [specialization, setSpecialization] = useState('hacker');
     const [bio, setBio] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    // Загружаем список корпораций
+    useEffect(() => {
+        const fetchCorporations = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            try {
+                const response = await fetch('/api/agent/corporations', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    setCorporations(data);
+                    if (data.length > 0) {
+                        setSelectedCorpId(data[0].id);
+                    }
+                } else {
+                    setError('Не удалось загрузить список корпораций');
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Ошибка загрузки корпораций');
+            }
+        };
+        fetchCorporations();
+    }, [navigate]);
 
     // Проверяем, есть ли уже агент
     useEffect(() => {
@@ -28,15 +54,10 @@ const ChooseCorporationPage: React.FC = () => {
             navigate('/login');
             return;
         }
-
-        // Проверяем, есть ли у пользователя агент
         fetch('/api/agent/me', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         }).then(res => {
             if (res.ok) {
-                // Если агент уже есть, перенаправляем на дашборд
                 navigate('/dashboard');
             }
         }).catch(err => console.error(err));
@@ -53,6 +74,14 @@ const ChooseCorporationPage: React.FC = () => {
             return;
         }
 
+        // Найдём выбранную корпорацию по id
+        const selectedCorp = corporations.find(c => c.id === selectedCorpId);
+        if (!selectedCorp) {
+            setError('Выберите корпорацию');
+            setLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch('/api/agent/create', {
                 method: 'POST',
@@ -62,18 +91,16 @@ const ChooseCorporationPage: React.FC = () => {
                 },
                 body: JSON.stringify({
                     name,
-                    corporation,
+                    corporation: selectedCorp.name, // отправляем название (поле в CreateAgentRequest называется corporation)
                     specialization,
                     bio: bio || undefined
                 })
             });
 
-            // Получаем текст ответа
             const responseText = await response.text();
             console.log('Create agent response status:', response.status);
             console.log('Create agent response body:', responseText);
 
-            // Пытаемся распарсить JSON, если возможно
             let data;
             try {
                 data = JSON.parse(responseText);
@@ -152,8 +179,8 @@ const ChooseCorporationPage: React.FC = () => {
                     <div style={{ marginBottom: '15px' }}>
                         <label style={{ color: '#4A4A4A' }}>Корпорация</label>
                         <select
-                            value={corporation}
-                            onChange={(e) => setCorporation(e.target.value)}
+                            value={selectedCorpId ?? ''}
+                            onChange={(e) => setSelectedCorpId(Number(e.target.value))}
                             style={{
                                 width: '100%',
                                 background: '#0A0A0A',
@@ -164,8 +191,10 @@ const ChooseCorporationPage: React.FC = () => {
                                 marginTop: '5px',
                             }}
                         >
-                            {CORPORATIONS.map(corp => (
-                                <option key={corp} value={corp}>{corp}</option>
+                            {corporations.map(corp => (
+                                <option key={corp.id} value={corp.id}>
+                                    {corp.name} {corp.ticker ? `[${corp.ticker}]` : ''}
+                                </option>
                             ))}
                         </select>
                     </div>

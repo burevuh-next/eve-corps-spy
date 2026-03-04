@@ -53,6 +53,7 @@ public class MissionController {
             CurrentMissionDto mission = missionService.acceptMission(agentId, templateId);
             return ResponseEntity.ok(mission);
         } catch (RuntimeException e) {
+            e.printStackTrace();
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);

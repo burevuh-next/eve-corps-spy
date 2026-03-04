@@ -102,6 +102,30 @@
 				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 				<version>2.6.0</version>
 		</dependency>
+		<!-- WebClient для реактивных HTTP-запросов -->
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<!-- Кеширование -->
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+
+		<!-- Для работы с кешем в памяти -->
+		<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<!-- Resilience4j для обработки rate limits -->
+		<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot2</artifactId>
+				<version>2.1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

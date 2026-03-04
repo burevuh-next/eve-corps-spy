@@ -41,7 +41,10 @@ public class MissionService {
     private AgentRepository agentRepository;
 
     @Autowired
-    private AgentSkillRepository agentSkillRepository;   // добавлено
+    private AgentSkillRepository agentSkillRepository;
+
+    @Autowired
+    private EveMarketService marketService;
 
     // Получить список доступных шаблонов миссий (все активные)
     public List<MissionTemplateDto> getAvailableTemplates() {
@@ -92,12 +95,15 @@ public class MissionService {
         }
 
         Mission mission = new Mission();
+    
+        int baseReward = template.getBaseReward();
+        int realReward = marketService.calculateMissionReward(template.getType(), baseReward);
         mission.setAgent(agent);
         mission.setTemplate(template);
         mission.setStatus("in_progress");
         mission.setCurrentStep(0);
         mission.setRiskAccumulated(0);
-        mission.setReward(template.getBaseReward());
+        mission.setReward(realReward);
         mission.setCreatedAt(Instant.now());
         mission.setAcceptedAt(Instant.now());
 

@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,10 @@ import com.example.backend.dto.AgentResponse;
 import com.example.backend.dto.AgentSkillDto;
 import com.example.backend.dto.CreateAgentRequest;
 import com.example.backend.entity.Agent;
+import com.example.backend.entity.Corporation;
 import com.example.backend.entity.User;
 import com.example.backend.service.AgentService;
+import com.example.backend.service.EveCorporationService;
 import com.example.backend.service.UserService;
 
 @RestController
@@ -37,6 +40,28 @@ public class AgentController {
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userService.getUserByEmail(email);
+    }
+    
+    @Autowired
+    private EveCorporationService eveCorporationService;
+
+    @GetMapping("/corporations")
+    public ResponseEntity<?> getCorporations() {
+        List<Corporation> corps = eveCorporationService.getNpcCorporations();
+        
+        // Преобразуем в DTO
+        List<Map<String, Object>> result = corps.stream()
+            .map(c -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", c.getEveCorporationId());
+                map.put("name", c.getName());
+                map.put("ticker", c.getTicker());
+                map.put("memberCount", c.getMemberCount());
+                return map;
+            })
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/create")
