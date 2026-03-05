@@ -12,11 +12,12 @@ public class MissionTemplateDto {
     private int minStealthLevel;
     private int minAnalysisLevel;
     private int stepCount;
+    private int minReputation;
 
     // конструктор
     public MissionTemplateDto(Long id, String type, String name, String description, int baseReward,
                               int baseRisk, int minHackingLevel, int minSocialLevel, int minStealthLevel,
-                              int minAnalysisLevel, int stepCount) {
+                              int minAnalysisLevel, int stepCount, int minReputation) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -28,6 +29,7 @@ public class MissionTemplateDto {
         this.minStealthLevel = minStealthLevel;
         this.minAnalysisLevel = minAnalysisLevel;
         this.stepCount = stepCount;
+        this.minReputation = minReputation;
     }
 
     // геттеры
@@ -42,4 +44,5 @@ public class MissionTemplateDto {
     public int getMinStealthLevel() { return minStealthLevel; }
     public int getMinAnalysisLevel() { return minAnalysisLevel; }
     public int getStepCount() { return stepCount; }
+    public int getMinReputation() { return minReputation; }
 }

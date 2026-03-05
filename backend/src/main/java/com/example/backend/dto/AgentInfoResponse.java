@@ -8,8 +8,9 @@ public class AgentInfoResponse {
     private int suspicionLevel;
     private int credits;
     private String bio;
+    private int reputation;
 
-    public AgentInfoResponse(Long id, String name, String corporationName, String specialization, int suspicionLevel, int credits, String bio) {
+    public AgentInfoResponse(Long id, String name, String corporationName, String specialization, int suspicionLevel, int credits, String bio, int reputation) {
         this.id = id;
         this.name = name;
         this.corporationName = corporationName;
@@ -17,6 +18,7 @@ public class AgentInfoResponse {
         this.suspicionLevel = suspicionLevel;
         this.credits = credits;
         this.bio = bio;
+        this.reputation = reputation;
     }
 
     // геттеры
@@ -27,4 +29,5 @@ public class AgentInfoResponse {
     public int getSuspicionLevel() { return suspicionLevel; }
     public int getCredits() { return credits; }
     public String getBio() { return bio; }
+    public int getReputation() { return reputation; }
 }

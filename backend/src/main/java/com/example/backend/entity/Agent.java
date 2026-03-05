@@ -14,47 +14,54 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name="agents")
 public class Agent {
-  @Id
-  @GeneratedValue (strategy=GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue (strategy=GenerationType.IDENTITY)
+    private Long id;
 
-  @OneToOne
-  @JoinColumn (name="user_id", referencedColumnName="id", unique=true, nullable=false)
-  private User user;
+    @OneToOne
+    @JoinColumn (name="user_id", referencedColumnName="id", unique=true, nullable=false)
+    private User user;
 
-  @Column(nullable = false)
-  private String name; //Name agent
+    @Column(nullable = false)
+    private String name; //Name agent
+    
+    @Column(nullable = false)
+    private String corporation; //Corps
+
+    @Column(nullable = false)
+    private String specialization; //hacker, social, saboteur и т.д.
+    private String bio; //biography
+    
+    @Column(nullable = false)
+    private int suspicionLevel = 0;
+    
+    @Column(nullable = false)
+    private int credits = 1000;
+
+    @Column(nullable = false)
+    private boolean active = true;
   
-  @Column(nullable = false)
-  private String corporation; //Corps
 
-  @Column(nullable = false)
-  private String specialization; //hacker, social, saboteur и т.д.
-  private String bio; //biography
-  
-  @Column(nullable = false)
-  private int suspicionLevel = 0;
-  
-  @Column(nullable = false)
-  private int credits = 1000;
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
 
-  @Column(nullable = false)
-  private boolean active = true;
+    private Instant retiredAt;
 
-  @Column(nullable = false, updatable = false)
-  private Instant createdAt = Instant.now();
+    public Agent() {}
 
-  private Instant retiredAt;
-
-  public Agent() {}
-
-  public Agent(User user, String name, String corporation, String specialization, String bio) {
+    public Agent(User user, String name, String corporation, String specialization, String bio) {
         this.user = user;
         this.name = name;
         this.corporation = corporation;
         this.specialization = specialization;
         this.bio = bio;
     }
+    @Column(nullable = false)
+    private int reputation = 0;
+
+    // геттер и сеттер
+    public int getReputation() { return reputation; }
+    public void setReputation(int reputation) { this.reputation = reputation; }
 
     // Геттеры и сеттеры (сгенерировать или написать)
     public Long getId() { return id; }

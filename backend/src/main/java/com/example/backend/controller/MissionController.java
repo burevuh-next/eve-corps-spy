@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.backend.dto.CurrentMissionDto;
 import com.example.backend.dto.MissionTemplateDto;
+import com.example.backend.entity.Agent;
 import com.example.backend.service.AgentService;
 import com.example.backend.service.MissionService;
 
@@ -35,11 +36,15 @@ public class MissionController {
     public ResponseEntity<?> getAvailableMissions(@AuthenticationPrincipal String userId) {
         try {
             Long uid = Long.parseLong(userId);
-            // Можно добавить фильтрацию по навыкам агента, но пока просто все шаблоны
-            List<MissionTemplateDto> templates = missionService.getAvailableTemplates();
+            // Получаем агента по userId
+            Agent agent = agentService.getActiveAgentByUserId(uid);
+            List<MissionTemplateDto> templates = missionService.getAvailableTemplatesForAgent(agent.getId());
             return ResponseEntity.ok(templates);
         } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user id");
+        } catch (RuntimeException e) {
+            // Если агент не найден, возвращаем пустой список или ошибку
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
         }
     }
 

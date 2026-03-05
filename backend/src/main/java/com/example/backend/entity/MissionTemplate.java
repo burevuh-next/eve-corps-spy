@@ -29,6 +29,10 @@ public class MissionTemplate {
     private int stepCount;
     private boolean active = true;
 
+    @Column(name = "min_reputation")
+    private int minReputation = 0; 
+
+
     // Геттеры и сеттеры
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -65,4 +69,7 @@ public class MissionTemplate {
 
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
+    public int getMinReputation() { return minReputation; }
+    public void setMinReputation(int minReputation) { this.minReputation = minReputation; }
 }

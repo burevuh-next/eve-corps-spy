@@ -127,6 +127,10 @@ const Dashboard: React.FC = () => {
                         <span style={styles.label}>Кредиты:</span>
                         <span style={styles.value}>{agent.credits} ISK</span>
                     </div>
+                    <div style={styles.infoItem}>
+                        <span style={styles.label}>Репутация:</span>
+                        <span style={styles.value}>{agent.reputation}</span>
+                    </div>
                 </div>
 
                 <div style={styles.suspicionSection}>

@@ -80,7 +80,8 @@ public class AgentService {
                 saved.getBio(),
                 saved.getSuspicionLevel(),
                 saved.getCredits(),
-                formattedDate
+                formattedDate,
+                saved.getReputation()
         );
     }
 
@@ -96,7 +97,8 @@ public class AgentService {
                 agent.getBio(),
                 agent.getSuspicionLevel(),
                 agent.getCredits(),
-                formattedDate
+                formattedDate,
+                agent.getReputation()
         );
     }
     
@@ -114,7 +116,8 @@ public class AgentService {
                 agent.getSpecialization(),
                 agent.getSuspicionLevel(),
                 agent.getCredits(),
-                agent.getBio()
+                agent.getBio(),
+                agent.getReputation()
         );
     }
 
@@ -156,4 +159,5 @@ public class AgentService {
                         as.getSkill().getMaxLevel()))
                 .collect(Collectors.toList());
     }
+
 }

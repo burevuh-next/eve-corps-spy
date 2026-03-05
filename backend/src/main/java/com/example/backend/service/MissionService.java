@@ -54,7 +54,7 @@ public class MissionService {
                         t.getBaseReward(), t.getBaseRisk(),
                         t.getMinHackingLevel(), t.getMinSocialLevel(),
                         t.getMinStealthLevel(), t.getMinAnalysisLevel(),
-                        t.getStepCount()))
+                        t.getStepCount(), t.getMinReputation()))
                 .collect(Collectors.toList());
     }
 
@@ -97,7 +97,10 @@ public class MissionService {
         Mission mission = new Mission();
     
         int baseReward = template.getBaseReward();
-        int realReward = marketService.calculateMissionReward(template.getType(), baseReward);
+        int repBonus = (int) (1.0 + (agent.getReputation()/1000.0)); // +0.1% за единицу
+        int repReward = (int)(template.getBaseReward() * repBonus);
+        int realReward = marketService.calculateMissionReward(template.getType(), baseReward + repReward);
+
         mission.setAgent(agent);
         mission.setTemplate(template);
         mission.setStatus("in_progress");
@@ -191,6 +194,10 @@ public class MissionService {
                             agentSkillRepository.save(as);
                         });
             }
+            // Начисляем репутацию (например, базовая награда / 10)
+            int repReward = mission.getTemplate().getBaseReward() / 10;
+            agent.setReputation(agent.getReputation() + repReward);
+            agentRepository.save(agent);
         }
 
         mission = missionRepository.save(mission);
@@ -231,6 +238,28 @@ public class MissionService {
                 map.put("hacking", 15);
                 map.put("social", 15);
                 break;
+            case "assassination":
+                map.put("stealth", 25);
+                map.put("social", 15);
+                map.put("analysis", 5);
+                break;
+            case "interception":
+                map.put("hacking", 20);
+                map.put("analysis", 15);
+                break;
+            case "bribery":
+                map.put("social", 25);
+                map.put("stealth", 10);
+                break;
+            case "tech_espionage":
+                map.put("hacking", 25);
+                map.put("analysis", 15);
+                map.put("stealth", 15);
+                break;
+            case "supply_sabotage":
+                map.put("stealth", 15);
+                map.put("hacking", 10);
+                break;
             default:
                 map.put("hacking", 10);
         }
@@ -245,5 +274,38 @@ public class MissionService {
             as.setExperience(as.getExperience() - expNeeded);
             expNeeded = as.getLevel() * 100;
         }
+    }
+
+    public List<MissionTemplateDto> getAvailableTemplatesForAgent(Long agentId) {
+        // Получаем агента
+        Agent agent = agentRepository.findById(agentId)
+                .orElseThrow(() -> new RuntimeException("Agent not found"));
+
+        // Получаем навыки агента
+        List<AgentSkill> agentSkills = agentSkillRepository.findByAgentId(agentId);
+        Map<String, Integer> skillLevels = agentSkills.stream()
+                .collect(Collectors.toMap(
+                    as -> as.getSkill().getName().toLowerCase(),
+                    AgentSkill::getLevel
+                ));
+
+        int reputation = agent.getReputation();
+
+        // Получаем все активные шаблоны и фильтруем
+        return templateRepository.findByActiveTrue().stream()
+                .filter(template -> reputation >= template.getMinReputation())
+                .filter(template -> 
+                    skillLevels.getOrDefault("hacking", 0) >= template.getMinHackingLevel() &&
+                    skillLevels.getOrDefault("social", 0) >= template.getMinSocialLevel() &&
+                    skillLevels.getOrDefault("stealth", 0) >= template.getMinStealthLevel() &&
+                    skillLevels.getOrDefault("analysis", 0) >= template.getMinAnalysisLevel()
+                )
+                .map(t -> new MissionTemplateDto(
+                    t.getId(), t.getType(), t.getName(), t.getDescription(),
+                    t.getBaseReward(), t.getBaseRisk(),
+                    t.getMinHackingLevel(), t.getMinSocialLevel(),
+                    t.getMinStealthLevel(), t.getMinAnalysisLevel(),
+                    t.getStepCount(), t.getMinReputation()))
+                .collect(Collectors.toList());
     }
 }
